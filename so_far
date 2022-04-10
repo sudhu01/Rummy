@@ -1,0 +1,192 @@
+from random import *
+from cardsort import comp_sort
+print('WELCOME TO RUMMY!')
+
+def auto_sort():
+    while True:
+        x = input("Would you like to enable auto sort?(Y/N): ")
+        if x.isalpha():
+            if x.upper() == "Y":
+                return True
+            elif x.upper() == "N":
+                return False
+            else:
+                print("Enter either Y or N!")
+        else:
+            print("Enter either Y or N!")
+auto = auto_sort()
+def h_t():
+    while True:
+        y = input("Heads or tails(H/T): ")
+        ht = ['H','T']
+        if y.isalpha():
+            if y.upper() == "H" or y.upper() == "T":
+                c = choice(ht)
+                if y.upper() == c:
+                    print(f"The coin landed on {c}")
+                    print("You go first!")
+                    return 1
+                else:
+                    print(f"The coin landed on {c}")
+                    print("You go second...")
+                    return 2
+            else:
+                print("Enter either H or T")
+        else:
+            print("Enter either H or T")
+turn = h_t()
+
+card_type = ('♠', '♦', '♥', '♣')
+card_numbers = ('A','2','3','4','5','6','7','8','9','10','J','Q','K')
+cards = []
+for x in card_numbers:
+    for y in card_type:
+        cards += [(x,y)]
+user_list = []
+comp_list = []
+for num in range(10):
+    c = choice(cards)
+    user_list += (c,)
+    cards.remove(c)
+    d = choice(cards)
+    comp_list += (d,)
+    cards.remove(d)
+
+u1 = []
+def design(num,type):
+    pcarddisplay = []
+    pcarddisplay.append("┌─────────┐")
+    pcarddisplay.append("│{}{}. . .│")
+    pcarddisplay.append("│. . . . .│")
+    pcarddisplay.append("│. . {}. .│")
+    pcarddisplay.append("│. . . . .│")
+    pcarddisplay.append("│. . .{}{}│")
+    pcarddisplay.append("└─────────┘")
+
+    if len(num) == 1:
+        x = (f"│{num[:1]}", " . . . .│")
+        pcarddisplay[1] = "".join(x)
+        x = ("│. . . . ", f"{num[:1]}│")
+        pcarddisplay[5] = "".join(x)
+    else:
+        x = (f"│{num[:]}", ". . . .│")
+        pcarddisplay[1] = "".join(x)
+        x = ("│. . . .", f"{num[:]}│")
+        pcarddisplay[5] = "".join(x)
+
+    if type == '♦':
+        pcarddisplay[3] = "│. . ♦ . .│"
+    if type == '♣':
+        pcarddisplay[3] = "│. . ♣ . .│"
+    if type == '♥':
+        pcarddisplay[3] = "│. . ♥ . .│"
+    if type == '♠':
+        pcarddisplay[3] = "│. . ♠ . .│"
+
+    return pcarddisplay
+print("Your cards are: ")
+print('\n'.join(map('  '.join, zip(*(design(c[0],c[1]) for c in user_list)))))
+
+def cmds():
+    ch = choice(cards)
+    cards.remove(ch)
+
+    def open_card(num, type):
+        if len(num) == 1:
+            return f'┌─────────┐\n│{num} . . . .│\n│. . . . .│\n│. . {type} . .│\n│. . . . .│\n│. . . . {num}│\n└─────────┘\n'
+        else:
+            return f'┌─────────┐\n│{num}. . . .│\n│. . . . .│\n│. . {type} . .│\n│. . . . .│\n│. . . .{num}│\n└─────────┘\n'
+
+    print("Open card: ")
+    print(''.join(open_card(ch[0], ch[1])))
+
+    def move_card(l):
+        print("Enter 'stop' whenever you want to stop moving the cards")
+        while True:
+            move = input("Enter the card number and card suit of which you want to move(separated by a comma): ")
+            if move.isalpha():
+                if move.lower() == 'stop':
+                    break
+            index = input("Enter the position you want to move it to: ")
+            if index.isalpha():
+                if index.lower() == 'stop':
+                    break
+            if ',' in move and move.count(',') == 1 and index.isdigit():
+                m_list = move.split(',')
+                index = int(index)
+                m = tuple(m_list)
+                if m in l and index in range(1, 11):
+                    l.pop(l.index(m))
+                    l.insert(index - 1, m)
+                    print('\n'.join(map('  '.join, zip(*(design(c[0], c[1]) for c in l)))))
+                else:
+                    print("Enter valid card and position")
+            else:
+                print("Enter valid card and position")
+        return ''
+
+    counter = 0
+    if turn == 1:
+        while True:
+            if counter % 2 == 0:
+                achoice = "a"
+                while achoice not in ['Y', 'N', 'n', 'y']:
+                    achoice = input(
+                        "Do you want to use this card?(Y/N)\nIf not you will draw a random card from the deck: ")
+                    if achoice not in ['Y', 'N', 'n', 'y']:
+                        print("You can only use this card or draw from the deck ")
+
+                if achoice == 'Y' or achoice == 'y':
+                    print(''.join(open_card(ch[0], ch[1])), "has been added to your hand")
+                    user_list.append(ch)
+                else:
+                    ch2 = choice(cards)
+                    print(''.join(open_card(ch2[0], ch2[1])), "has been added to your hand")
+                    user_list.append(ch2)
+
+                print("Your cards are: ")
+                print('\n'.join(map('  '.join, zip(*(design(c[0], c[1]) for c in user_list)))))
+
+                while True:
+                    discard = input("Enter the card number and card suit of which you want to discard(separated by a comma): ")
+                    if ',' in discard and discard.count(',') == 1:
+                        d_list = discard.split(',')
+                        if d_list[0] in card_numbers and d_list[1] in card_type:
+                            if tuple(d_list) in user_list:
+                                user_list.remove(tuple(d_list))
+                                print(''.join(open_card(d_list[0], d_list[1])), "has been discarded")
+                                print("Your cards are:")
+                                print('\n'.join(map('  '.join, zip(*(design(c[0], c[1]) for c in user_list)))))
+                                break
+                            else:
+                                print("Enter only a card you have!")
+                        else:
+                            print("Enter proper card number and suit!")
+                    else:
+                        print("Enter one comma between the number and suit!")
+                if auto:
+                    print("Your sorted cards are: ")
+                    new_user_list = comp_sort(user_list)
+                    sorted_user_list = new_user_list.type_sort()
+                    print('\n'.join(map('  '.join, zip(*(design(c[0], c[1]) for c in sorted_user_list)))))
+                else:
+                    move_card(user_list)
+                counter += 1
+            else:
+                new_comp_list = comp_sort(comp_list)
+                sorted_comp_list = new_comp_list.type_sort()
+                points = 0
+                for t in sorted_comp_list:
+                    if ch[0] == t[0] and t[0]:
+                        pass
+
+    elif turn == 2:
+        if counter % 2 == 0:
+            new_comp_list = comp_sort(comp_list)
+            sorted_comp_list = new_comp_list.type_sort()
+            points = 0
+            for t in sorted_comp_list:
+                if ch[0] == t[0] and t[0]:
+                    pass
+
+cmds()
